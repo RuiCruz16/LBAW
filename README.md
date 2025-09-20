@@ -38,6 +38,8 @@ Planora is a project management system currently being developed by a small grou
 
 The primary objective of the project is to create a web-based information system for project management. This includes task assignment and tracking for each team member, setting deadlines, and organising work teams. The tool is flexible, allowing it to be used in both individual projects and large-scale team collaborations.
 
+**If you wish to see the full report, please access the `docs` folder, where the four parts of the report are available.**
+
 ## Features
 Each task will include detailed information about the user who created it and the individual responsible for its completion. Tasks will also allow comments from other members, providing an additional channel for feedback and collaboration.
 
