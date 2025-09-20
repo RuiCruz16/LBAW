@@ -1,0 +1,500 @@
+openapi: 3.0.0
+
+info:
+  version: '1.0'
+  title: 'Planora'
+  description: 'Web Resources Specification (A7) for Planora'
+
+servers:
+  - url: http://localhost:8000
+    description: Localhost server
+
+tags:
+  - name: 'M01: Authentication and Profile'
+  - name: 'M02: Projects'
+  - name: 'M03: Tasks'
+  - name: 'M04: Search'
+  - name: 'M05: Admin'
+
+paths:
+
+  /login:
+    get:
+      operationId: R101
+      summary: 'Show Login Form'
+      description: 'Returns the login form for users to authenticate. PUB'
+      tags:
+        - 'M01: Authentication and Profile'
+      responses:
+        '200':
+          description: 'Successful response. Displays the login form.'
+    post:
+      operationId: R102
+      summary: 'Authenticate User'
+      description: 'Processes the login form submission and authenticates the user. Redirects on success or failure. PUB'
+      tags:
+        - 'M01: Authentication and Profile'
+
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                password:
+                  type: string
+              required:
+                - email
+                - password
+
+      responses:
+        '302':
+          description: 'Redirect after processing the login credentials.'
+          headers:
+            Location:
+              schema:
+                type: string
+                example:
+                  302Success:
+                    description: 'Successful authentication. Redirect to user dashboard.'
+                    value: '/projects'
+                  302Error:
+                    description: 'Failed authentication. Redirect to login form.'
+                    value: '/login'
+
+  /logout:
+
+    post:
+      operationId: R103
+      summary: 'Logout Action'
+      description: 'Logs out the currently authenticated user and invalidates the session. Redirects to the login page. Access: USR, ADM'
+      tags:
+        - 'M01: Authentication and Profile'
+      responses:
+        '302':
+          description: 'Redirect after processing logout.'
+          headers:
+            Location:
+              schema:
+                type: string
+                example:
+                  302Success:
+                    description: 'Successful logout. Redirect to login form.'
+                    value: '/login'
+                  302Error:
+                    description: 'Logout failed. Redirect to projects page.'
+                    value: '/projects'
+
+  /register:
+    get:
+      operationId: R104
+      summary: 'Show Register Form'
+      description: 'Returns the new user registration form. No authentication required. Access: PUB'
+      tags:
+        - 'M01: Authentication and Profile'
+      responses:
+        '200':
+          description: 'Successful response. Displays the sign-up form.'
+
+    post:
+      operationId: R105
+      summary: 'Register User'
+      description: 'Processes the new user registration form submission, creates a new user, and logs them in. Access: PUB'
+      tags:
+        - 'M01: Authentication and Profile'
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                email:
+                  type: string
+                password:
+                  type: string
+                password-confirm:
+                  type: string
+              required:
+                - username
+                - email
+                - password
+                - password-confirm
+      responses:
+        '302':
+          description: 'Redirect after successful registration and login.'
+          headers:
+            Location:
+              schema:
+                type: string
+                example:
+                  302Success:
+                    description: 'Successful registration. Redirect to user dashboard.'
+                    value: '/projects'
+
+  /profile/{id}:
+    get:
+      operationId: R106
+      summary: 'View User Profile'
+      description: 'Display the profile of a specific user. Access: USR, ADM'
+      tags:
+        - 'M01: Authentication and Profile'
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: 'The ID of the user whose profile to view.'
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: 'User profile displayed successfully.'
+        '404':
+          description: 'User profile not found.'
+
+  /profile/{id}/edit:
+    get:
+      operationId: R107
+      summary: 'Edit User Profile Form'
+      description: 'Displays the form for editing the authenticated user  profile. Access: USR, ADM'
+      tags:
+        - 'M01: Authentication and Profile'
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: 'The ID of the user whose profile to edit.'
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: 'Edit profile form displayed successfully.'
+        '404':
+          description: 'User not found.'
+
+  /profile:
+    post:
+      operationId: R108
+      summary: 'Update User Profile'
+      description: 'Updates the authenticated user profile with new data (username, email, password, biography, and profile picture). Access: USR, ADM'
+      tags:
+        - 'M01: Authentication and Profile'
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                email:
+                  type: string
+                biography:
+                  type: string
+                password:
+                  type: string
+                password_confirmation:
+                  type: string
+                profile_picture:
+                  type: string
+                  format: binary
+              required:
+                - username
+                - email
+      responses:
+        '302':
+          description: 'Redirect after updating the profile.'
+          headers:
+            Location:
+              schema:
+                type: string
+                example:
+                  302Success:
+                    description: 'Profile successfully updated. Redirect to the user profile page.'
+                    value: '/profile/{id}'
+                  302Error:
+                    description: 'Error Updating Profile.'
+                    value: '/profile/{id}'
+
+  /projects:
+    get:
+      operationId: R201
+      summary: 'View Projects'
+      description: 'Display the projects of a specific user. Access: USR, ADM, OWN, PRM, PRC'
+      tags:
+        - 'M02: Projects'
+      responses:
+        '200':
+          description: 'Projects page displayed successfully.'
+
+  /projects/create:
+    get:
+      operationId: R202
+      summary: 'Show Create Project Form'
+      description: 'Display the create project form. Access: USR, ADM, OWN, PRM, PRC'
+      tags:
+        - 'M02: Projects'
+      responses:
+        '200':
+          description: 'Create Project Form displayed successfully.'
+    post:
+      operationId: R203
+      summary: 'Create a New Project'
+      description: 'Create a new project. Access: USR, ADM, OWN, PRM, PRC'
+      tags:
+        - 'M02: Projects'
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                projectname:
+                  type: string
+                description:
+                  type: string
+              required:
+                - projectname
+                - description
+      responses:
+        '200':
+          description: 'New Project created successfully.'
+
+  /projects/{id}:
+    get:
+      operationId: R204
+      summary: 'Show Project Page'
+      description: 'Display the create project form. Access: USR, ADM, OWN, PRM, PRC'
+      tags:
+        - 'M02: Projects'
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: 'The ID of the project to view.'
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: 'Project page displayed successfully.'
+
+  /projects/{projectId}/add-member:
+    post:
+      operationId: R205
+      summary: 'Add a New Member to the Project'
+      description: 'Adds a new member to the project. Access: ADM, OWN, PRC'
+      tags:
+        - 'M02: Projects'
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                user_id:
+                  type: integer
+              required:
+                - user_id
+      responses:
+        '200':
+          description: 'A new member was added to the project successfully.'
+        '500':
+          description: 'Failed adding a new member to the project.'
+
+  /tasks/{id}:
+    get:
+      operationId: R301
+      summary: 'View Task'
+      description: 'Displays the details of a specific task, including its status. Access: ADM, OWN, PRM, PRC'
+      tags:
+        - 'M03: Tasks'
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: 'The ID of the task to view.'
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: 'Task details displayed successfully.'
+        '500':
+          description: 'Failed to show task.'
+    put:
+      operationId: R303
+      summary: 'Update Task'
+      description: 'Updates the details of an existing task. Access: ADM, OWN, PRM, PRC'
+      tags:
+        - 'M03: Tasks'
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: 'The ID of the task to update.'
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                task_title:
+                  type: string
+                task_description:
+                  type: string
+                deadline:
+                  type: string
+                  format: date
+                task_status_id:
+                  type: integer
+                  description: 'The status ID of the task.'
+                task_priority:
+                  type: string
+                  enum: [ Low, Medium, High ]
+              required:
+                - task_title
+                - task_status_id
+      responses:
+        '200':
+          description: 'Task updated successfully.'
+        '500':
+          description: 'Failed to update task. Please try again.'
+    delete:
+      operationId: R304
+      summary: 'Delete Task'
+      description: 'Deletes a specific task. Access: ADM, OWN, PRM, PRC'
+      tags:
+        - 'M03: Tasks'
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: 'The ID of the task to delete.'
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: 'Task deleted successfully.'
+        '500':
+          description: 'Failed to delete task. Please try again.'
+
+  /tasks/{project}:
+    post:
+      operationId: R302
+      summary: 'Create Task'
+      description: 'Creates a new task for a specific project. Access: ADM, OWN, PRM, PRC'
+      tags:
+        - 'M03: Tasks'
+      parameters:
+        - name: project
+          in: path
+          required: true
+          description: 'The ID of the project to create the task under.'
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                task_title:
+                  type: string
+                  description: 'Title of the task.'
+                task_description:
+                  type: string
+                  description: 'Description of the task.'
+                task_status_id:
+                  type: integer
+                  description: 'ID of the task status.'
+              required:
+                - task_title
+                - task_status_id
+      responses:
+        '200':
+          description: 'New task created successfully.'
+
+  /search:
+    get:
+      operationId: R401
+      summary: 'Search for different entities'
+      description: 'Search for users, projects and tasks. Access: USR, ADM, OWN, PRM, PRC'
+      tags:
+        - 'M04: Search'
+      parameters:
+        - name: query
+          in: path
+          required: true
+          description: 'The query to perform in the search.'
+          schema:
+            type: string
+      responses:
+        '400':
+          description: 'No query provided.'
+        '200':
+          description: 'Search results displayed successfully.'
+        '500':
+          description: 'Search Error.'
+
+  /users/search:
+    get:
+      operationId: R402
+      summary: 'Search users'
+      description: 'Search for users by username and email. Access: USR, ADM, OWN, PRM, PRC'
+      tags:
+        - 'M04: Search'
+      parameters:
+        - name: project_id
+          in: path
+          required: false
+          description: 'The id of the project to search members.'
+          schema:
+            type: integer
+        - name: user
+          in: path
+          required: true
+          description: 'The user to search for.'
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 'Search results displayed successfully.'
+        '500':
+          description: 'Failed to load user list.'
+
+  /admin:
+    get:
+      operationId: R501
+      summary: 'Search users'
+      description: 'Search for users by username and email. Access: ADM'
+      tags:
+        - 'M05: Admin'
+      parameters:
+        - name: project_id
+          in: path
+          required: false
+          description: 'The id of the project to search members.'
+          schema:
+            type: integer
+        - name: user
+          in: path
+          required: true
+          description: 'The user to search for.'
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 'Search results displayed successfully.'
+        '500':
+          description: 'Failed to load user list.'
